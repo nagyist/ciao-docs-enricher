@@ -1,6 +1,6 @@
 package uk.nhs.ciao.docs.enricher;
 
-import java.util.Map;
+import uk.nhs.ciao.docs.parser.ParsedDocument;
 
 /**
  * An asynchronous callback to notify when document enrichment has completed.
@@ -13,7 +13,7 @@ public interface AsyncDocumentEnricherCallback {
 	 * 
 	 * @param enrichedDocument The enriched document
 	 */
-	void onDocumentWasEnriched(Map<String, Object> enrichedDocument);
+	void onDocumentWasEnriched(ParsedDocument enrichedDocument);
 	
 	/**
 	 * Callback invoked when document enrichment failed.

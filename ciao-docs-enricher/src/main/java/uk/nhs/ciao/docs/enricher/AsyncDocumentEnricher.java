@@ -1,6 +1,6 @@
 package uk.nhs.ciao.docs.enricher;
 
-import java.util.Map;
+import uk.nhs.ciao.docs.parser.ParsedDocument;
 
 /**
  * Enriches a document with additional properties in an asynchronous manner
@@ -17,5 +17,5 @@ public interface AsyncDocumentEnricher {
 	 * @param asyncCallback The callback to notify once enrichment has been completed or has failed
 	 * @throws Exception If the document could not be processes during the initial synchronous stage of enrichment
 	 */
-	void enrichDocument(final Map<String, Object> document, final AsyncDocumentEnricherCallback asyncCallback) throws Exception;
+	void enrichDocument(final ParsedDocument document, final AsyncDocumentEnricherCallback asyncCallback) throws Exception;
 }

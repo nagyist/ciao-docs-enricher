@@ -1,13 +1,13 @@
 package uk.nhs.ciao.docs.enricher;
 
-import java.util.Map;
-
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.AsyncProcessor;
 import org.apache.camel.Exchange;
 import org.apache.camel.InvalidPayloadException;
 import org.apache.camel.Processor;
 import org.apache.camel.util.AsyncProcessorHelper;
+
+import uk.nhs.ciao.docs.parser.ParsedDocument;
 
 import com.google.common.base.Preconditions;
 
@@ -30,15 +30,14 @@ public abstract class DocumentEnricherProcessor implements Processor {
 		return new AsynchronousProcessor(enricher);
 	}
 	
-	@SuppressWarnings("unchecked")
-	protected Map<String, Object> getInputDocument(final Exchange exchange)
+	protected ParsedDocument getInputDocument(final Exchange exchange)
 			throws InvalidPayloadException {
-		return exchange.getIn().getMandatoryBody(Map.class);
+		return exchange.getIn().getMandatoryBody(ParsedDocument.class);
 	}
 
-	protected void setOutputDocument(final Exchange exchange, final Map<String, Object> parsedDocument) {
+	protected void setOutputDocument(final Exchange exchange, final ParsedDocument enrichedDocument) {
 		exchange.getOut().copyFrom(exchange.getIn());
-		exchange.getOut().setBody(parsedDocument);
+		exchange.getOut().setBody(enrichedDocument);
 	}
 	
 	private static class SynchronousProcessor extends DocumentEnricherProcessor {
@@ -50,9 +49,9 @@ public abstract class DocumentEnricherProcessor implements Processor {
 		
 		@Override
 		public void process(final Exchange exchange) throws Exception {
-			final Map<String, Object> document = getInputDocument(exchange);
-			final Map<String, Object> parsedDocument = enricher.enrichDocument(document);
-			setOutputDocument(exchange, parsedDocument);
+			final ParsedDocument document = getInputDocument(exchange);
+			final ParsedDocument enrichedDocument = enricher.enrichDocument(document);
+			setOutputDocument(exchange, enrichedDocument);
 		}
 	}
 	
@@ -73,7 +72,7 @@ public abstract class DocumentEnricherProcessor implements Processor {
 			final AsyncDocumentEnricherCallback enricherCallback = new AsyncDocumentEnricherCallback() {
 				private final boolean doneSync = false;
 				@Override
-				public void onDocumentWasEnriched(final Map<String, Object> enrichedDocument) {
+				public void onDocumentWasEnriched(final ParsedDocument enrichedDocument) {
 					try {
 						setOutputDocument(exchange, enrichedDocument);
 						callback.done(doneSync);
@@ -92,7 +91,7 @@ public abstract class DocumentEnricherProcessor implements Processor {
 			};
 			
 			try {
-				final Map<String, Object> document = getInputDocument(exchange);				
+				final ParsedDocument document = getInputDocument(exchange);				
 				enricher.enrichDocument(document, enricherCallback);
 				
 			} catch (Exception e) {

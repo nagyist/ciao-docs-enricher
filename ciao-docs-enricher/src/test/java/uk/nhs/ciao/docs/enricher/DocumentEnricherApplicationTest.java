@@ -37,6 +37,8 @@ import uk.nhs.ciao.camel.CamelApplicationRunner;
 import uk.nhs.ciao.camel.CamelApplicationRunner.AsyncExecution;
 import uk.nhs.ciao.configuration.CIAOConfig;
 import uk.nhs.ciao.configuration.impl.MemoryCipProperties;
+import uk.nhs.ciao.docs.parser.Document;
+import uk.nhs.ciao.docs.parser.ParsedDocument;
 import static org.junit.Assert.*;
 
 
@@ -186,14 +188,13 @@ public class DocumentEnricherApplicationTest {
 	}
 	
 	private String getExampleJson() throws Exception {
-		final Map<String, Object> document = Maps.newLinkedHashMap();
+		final Document originalDocument = new Document("somefile.txt", new byte[]{1,2,3,4,5,6});
 		
 		final Map<String, Object> properties = Maps.newLinkedHashMap();
 		properties.put("key1", "value1");
 		properties.put("key2", "value2");
 		
-		document.put("properties", properties);
-		
-		return objectMapper.writeValueAsString(document);
+		final ParsedDocument parsedDocument = new ParsedDocument(originalDocument, properties);
+		return objectMapper.writeValueAsString(parsedDocument);
 	}
 }

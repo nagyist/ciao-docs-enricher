@@ -1,6 +1,6 @@
 package uk.nhs.ciao.docs.enricher;
 
-import java.util.Map;
+import uk.nhs.ciao.docs.parser.ParsedDocument;
 
 /**
  * Enriches an incoming document with additional properties
@@ -18,5 +18,5 @@ public interface DocumentEnricher {
 	 * @return The enriched document
 	 * @throws Exception If the document could not be enriched
 	 */
-	Map<String, Object> enrichDocument(final Map<String, Object> document) throws Exception;
+	ParsedDocument enrichDocument(final ParsedDocument document) throws Exception;
 }
