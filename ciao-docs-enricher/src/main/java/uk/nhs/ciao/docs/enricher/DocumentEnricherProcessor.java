@@ -85,7 +85,6 @@ public abstract class DocumentEnricherProcessor implements Processor {
 				@Override
 				public void onDocumentEnrichmentFailed(final Throwable cause) {
 					exchange.setException(cause);
-					final boolean doneSync = false;
 					callback.done(doneSync);
 				}
 			};
