@@ -120,11 +120,11 @@ individual properties of that route.
 
 **Route Configuration:**
 
->   For 'generic' properties covering all routes, use the prefix:
->   `documentEnricherRoutes.`
-
 >   For 'specific' properties unique to a single route, use the prefix:
 >   `documentEnricherRoutes.${routeName}.`
+>
+>   For 'generic' properties covering all routes, use the prefix:
+>   `documentEnricherRoutes.`
 
 -   `inputQueue` - Selects which queue to consume incoming documents from
 
@@ -139,3 +139,25 @@ individual properties of that route.
 -   `staticJson.resourcePaths` - A comma separated list of JSON resources to
     include. Spring resource loader syntax is supported, e.g. `classpath:`,
     `file:` etc).
+
+### Example
+```INI
+# Select which processor config to use (via dynamic spring imports)
+processorConfig=default
+
+# Select which messaging config to use (via dynamic spring imports)
+messagingConfig=activemq-embedded
+#messagingConfig=activemq
+
+# Setup route names (and how many routes to build)
+documentEnricherRoutes=default
+
+# Setup 'shared' properties across all-routes
+documentEnricherRoutes.outputQueue=enriched-documents
+
+# Setup per-route properties (can override the shared properties)
+documentEnricherRoutes.default.enricherId=staticJson
+documentEnricherRoutes.default.inputQueue=parsed-documents
+
+staticJson.resourcePaths=classpath:/json/extra-detail.json
+```
