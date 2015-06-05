@@ -2,6 +2,7 @@ package uk.nhs.ciao.docs.enricher;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -13,7 +14,8 @@ import org.springframework.core.io.ResourceLoader;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
 
 import uk.nhs.ciao.docs.parser.ParsedDocument;
@@ -30,33 +32,48 @@ import uk.nhs.ciao.docs.parser.ParsedDocument;
 public class JsonResourceDocumentEnricher implements DocumentEnricher {
 	private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<Map<String, Object>>() {};
 	
-	private final String resourcePath;
+	private final List<String> resourcePaths;
 	private final ObjectMapper objectMapper;
 	private boolean failOnMissingResource = false;
 	
+	/**
+	 * Loads the specified JSON resources
+	 * <p>
+	 * A default is provided on construction - however the @Autowired annotation allows
+	 * spring to inject a suitable replacement at runtime (typically the main application
+	 * context).
+	 */
 	@Autowired
 	private final ResourceLoader resourceLoader;
 	
 	/**
 	 * Constructs a new enricher which will add properties from the specified path
 	 * 
-	 * @param resourcePath The path of the resource to add (using spring URLs)
+	 * @param resourcePaths The paths of the resource to add (using spring URLs)
 	 */
-	public JsonResourceDocumentEnricher(final String resourcePath) {
-		this(resourcePath, new ObjectMapper());
+	public JsonResourceDocumentEnricher(final String... resourcePaths) {
+		this(new ObjectMapper(), resourcePaths);
 	}
 	
 	/**
 	 * Constructs a new enricher which will add properties from the specified path using the
 	 * specified jackson object mapper
 	 * 
-	 * @param resourcePath The path of the resource to add (using spring URLs)
+	 * @param resourcePaths The paths of the resources to add (using spring URLs)
 	 * @param objectMapper The jackson object mapper to use when unmarshalling the JSON resource
 	 */
-	public JsonResourceDocumentEnricher(final String resourcePath, final ObjectMapper objectMapper) {
-		this.resourcePath = Preconditions.checkNotNull(resourcePath);
+	public JsonResourceDocumentEnricher(final ObjectMapper objectMapper, final String... resourcePaths) {
 		this.objectMapper = objectMapper == null ? new ObjectMapper() : objectMapper;
+		this.resourcePaths = Lists.newArrayList(resourcePaths);
 		this.resourceLoader = new DefaultResourceLoader();
+		
+		// Remove any null/empty paths
+		final Iterator<String> iterator = this.resourcePaths.iterator();
+		while (iterator.hasNext()) {
+			if (Strings.isNullOrEmpty(iterator.next())) {
+				iterator.remove();
+			}
+		}
 	}
 	
 	/**
@@ -76,13 +93,17 @@ public class JsonResourceDocumentEnricher implements DocumentEnricher {
 	 */
 	@Override
 	public ParsedDocument enrichDocument(final ParsedDocument document) throws Exception {
-		final Resource resource = resourceLoader.getResource(resourcePath);
-		
-		if (resource.exists()) {
-			final Map<String, Object> additionalProperties = readJsonResource(resource);
-			mergeProperties(document.getProperties(), additionalProperties);
-		} else if (failOnMissingResource) {
-			throw new Exception("Resource could not be loaded: " + resourcePath);
+		final Map<String, Object> properties = document.getProperties();
+
+		for (final String resourcePath: resourcePaths) {
+			final Resource resource = resourceLoader.getResource(resourcePath);
+			
+			if (resource.exists()) {
+				final Map<String, Object> additionalProperties = readJsonResource(resource);
+				mergeProperties(properties, additionalProperties);
+			} else if (failOnMissingResource) {
+				throw new Exception("Resource could not be loaded: " + resourcePath);
+			}
 		}
 		
 		return document;

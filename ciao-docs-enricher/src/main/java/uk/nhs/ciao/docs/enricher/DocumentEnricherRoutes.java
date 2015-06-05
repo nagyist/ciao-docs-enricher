@@ -3,6 +3,7 @@ package uk.nhs.ciao.docs.enricher;
 
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.model.dataformat.JsonLibrary;
+import org.apache.camel.spi.Registry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,16 +117,17 @@ public class DocumentEnricherRoutes extends CIPRoutes {
 		 */
 		@SuppressWarnings("deprecation")
 		public void configure() {
+			final Registry registry = getContext().getRegistry();
+			final Object enricher = registry.lookupByName(enricherId);
+			final DocumentEnricherProcessor processor = DocumentEnricherProcessor.createProcessor(enricher);
+			
 			from("jms:queue:" + inputQueue)
 			.id("parse-document-" + name)
 			.streamCaching()
 			.doTry()
 				.unmarshal().json(JsonLibrary.Jackson, ParsedDocument.class)
 				.log(LoggingLevel.INFO, LOGGER, "Unmarshalled incoming JSON document")
-
-				// TODO: Route to configured processor / enricher
-				//.processRef(processorId)				
-				
+				.process(processor)					
 				.marshal().json(JsonLibrary.Jackson)
 				.to("jms:queue:" + outputQueue)
 			.doCatch(Exception.class)

@@ -159,6 +159,7 @@ public class DocumentEnricherApplicationTest {
 		final MockEndpoint endpoint = MockEndpoint.resolve(camelContext, "mock:output");
 		endpoint.expectedMessageCount(1);
 		endpoint.expectedMessagesMatches(new Predicate() {			
+			@SuppressWarnings("unchecked")
 			@Override
 			public boolean matches(final Exchange exchange) {
 				// For now just check that we get a JSON object
@@ -166,7 +167,13 @@ public class DocumentEnricherApplicationTest {
 				try {
 					final Map<String, Object> enrichedDocument = objectMapper.readValue(
 							json, new TypeReference<Map<String, Object>>() {});
-					return enrichedDocument != null && enrichedDocument.containsKey("properties");
+					if (enrichedDocument == null || !enrichedDocument.containsKey("properties")) {
+						return false;
+					}
+					
+					// Check for the extra enriched properties
+					final Map<String, Object> properties = (Map<String, Object>) enrichedDocument.get("properties");
+					return properties.containsKey("author");
 				} catch (Exception e) {
 					throw Throwables.propagate(e);
 				} finally {
