@@ -2,6 +2,7 @@ package uk.nhs.ciao.docs.enricher;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -173,7 +174,16 @@ public class DocumentEnricherApplicationTest {
 					
 					// Check for the extra enriched properties
 					final Map<String, Object> properties = (Map<String, Object>) enrichedDocument.get("properties");
-					return properties.containsKey("author");
+					if (!properties.containsKey("author")) {
+						return false;
+					}
+					
+					// Check the merged list/map properties
+					final List<String> list = Arrays.asList("list_entry", "list_entry"); // entry should be added twice
+					final Map<String, Object> map = Maps.newLinkedHashMap(); // map values should be added once
+					map.put("a1", "p1");
+					map.put("a2", "p2");
+					return list.equals(properties.get("list")) && map.equals(properties.get("map"));
 				} catch (Exception e) {
 					throw Throwables.propagate(e);
 				} finally {

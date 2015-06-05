@@ -1,4 +1,11 @@
 {
   "additional-property": "add-prop",
-  "author": "Mr Person"
+  "author": "Mr Person",
+  "list": [
+  	"list_entry"
+  ],
+  "map": {
+  	"a1": "p1",
+  	"a2": "p2"
+  }
 }
