@@ -43,7 +43,7 @@ The following document enricher implementations are provided:
     This can be used to include static content which cannot be obtained from the
     original source document.
 
-    [7]: <./ciao-docs-enricher/src/main/java/uk/nhs/ciao/docs/enricher/JsonResourceDocumentEnricher.java>
+[7]: <./ciao-docs-enricher/src/main/java/uk/nhs/ciao/docs/enricher/JsonResourceDocumentEnricher.java>
 
 -   `PDSDocumentEnricher` - An enricher which performs a PDS lookup based on
     properties previously extracted from the source document (e.g. NHS number),
