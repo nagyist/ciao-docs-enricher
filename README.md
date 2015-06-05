@@ -27,8 +27,8 @@ following basic structure:
 
 [5]: <http://camel.apache.org/routes.html>
 
->   input JMS queue -\> `DocumentEnricher` or `AsyncDocumentEnricher` -\> output
->   JMS queue
+>   input queue (JMS) -\> `DocumentEnricher` or `AsyncDocumentEnricher` -\> output
+>   queue (JMS)
 
 The details of the JMS queues and document enrichers are specified at runtime
 through a combination of [ciao-configuration][6] properties and Spring XML
@@ -43,7 +43,7 @@ The following document enricher implementations are provided:
     This can be used to include static content which cannot be obtained from the
     original source document.
 
-    [7]: <./ciao-docs-enricher/src/main/java/uk/nhs/ciao/docs/enricher/JsonResourceDocumentEnricher.java>
+[7]: <./ciao-docs-enricher/src/main/java/uk/nhs/ciao/docs/enricher/JsonResourceDocumentEnricher.java>
 
 -   `PDSDocumentEnricher` - An enricher which performs a PDS lookup based on
     properties previously extracted from the source document (e.g. NHS number),
@@ -136,6 +136,6 @@ individual properties of that route.
 
 >   These properties only apply when using: `processorConfiguration=default`
 
--   staticJson.resourcePaths - A comma separated list of JSON resources to
+-   `staticJson.resourcePaths` - A comma separated list of JSON resources to
     include. Spring resource loader syntax is supported, e.g. `classpath:`,
     `file:` etc).
