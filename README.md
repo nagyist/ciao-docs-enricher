@@ -43,7 +43,7 @@ The following document enricher implementations are provided:
     This can be used to include static content which cannot be obtained from the
     original source document.
 
-[7]: <./ciao-docs-enricher/src/main/java/uk/nhs/ciao/docs/enricher/JsonResourceDocumentEnricher.java>
+    [7]: <./ciao-docs-enricher/src/main/java/uk/nhs/ciao/docs/enricher/JsonResourceDocumentEnricher.java>
 
 -   `PDSDocumentEnricher` - An enricher which performs a PDS lookup based on
     properties previously extracted from the source document (e.g. NHS number),
@@ -92,8 +92,50 @@ The Spring XML files are loaded from the classpath under the
 -   `messaging/activemq.xm`l - Configures ActiveMQ as the JMS implementation for
     input/output queues.
 
--   `messaging/activemq-embedded.xml`  - Configures an internal embedded
-    ActiveMQ as the JMS implementation for input/output queues. *(For use during
+-   `messaging/activemq-embedded.xml` - Configures an internal embedded ActiveMQ
+    as the JMS implementation for input/output queues. *(For use during
     development/testing)*
 
 ### CIAO Properties
+
+At runtime ciao-docs-enricher uses the available CIAO properties to determine
+which Spring XML files to load, which Camel routes to create, and how individual
+routes and components should be wired.
+
+**Spring Configuration:**
+
+-   `processorConfig` - Selects which processor configuration to load:
+    `processors/${processorConfig}.xml`
+
+-   `messagingConfig` - Selects which messaging configuration to load:
+    `messaging/${messagingConfig}.xml`
+
+**Routes:**
+
+-   `documentEnricherRoutes` - A comma separated list of route names to build
+
+The list of route names serves two purposes. Firstly it determines how many
+routes to build, and secondly each name is used as a prefix to specify the
+individual properties of that route.
+
+**Route Configuration:**
+
+>   For 'generic' properties covering all routes, use the prefix:
+>   `documentEnricherRoutes.`
+
+>   For 'specific' properties unique to a single route, use the prefix:
+>   `documentEnricherRoutes.${routeName}.`
+
+-   `inputQueue` - Selects which queue to consume incoming documents from
+
+-   `enricherId` - The Spring ID of the enricher to use when enriching documents
+
+-   `outputQueue` - Selects which queue to publish enriched documents to
+
+**Default Processor​:**
+
+>   These properties only apply when using: `processorConfiguration=default`
+
+-   staticJson.resourcePaths - A comma separated list of JSON resources to
+    include. Spring resource loader syntax is supported, e.g. `classpath:`,
+    `file:` etc).
