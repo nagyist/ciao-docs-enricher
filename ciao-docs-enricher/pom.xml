@@ -12,6 +12,12 @@
 	<artifactId>ciao-docs-enricher</artifactId>
 	<packaging>jar</packaging>
 
+	<properties>
+		<ciao.skipBinArchive>false</ciao.skipBinArchive>
+		<ciao.addClasspath>true</ciao.addClasspath>
+		<ciao.main>uk.nhs.ciao.docs.enricher.DocumentEnricherApplication</ciao.main>
+	</properties>
+	
 	<dependencies>
 		<dependency>
 			<groupId>uk.nhs.interoperability</groupId>
@@ -55,16 +61,4 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.camel</groupId>
-				<artifactId>camel-maven-plugin</artifactId>
-				<configuration>
-					<mainClass>uk.nhs.ciao.docs.enricher.DocumentEnricherApplication</mainClass>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>
