@@ -11,8 +11,8 @@
        in {servicmixpath}/etc/users.properties
   	-->
   	<bean id="jms" class="org.apache.activemq.camel.component.ActiveMQComponent">
-      <property name="brokerURL" value="tcp://localhost:61616" />        
-	  <property name="userName" value="smx" />
-	  <property name="password" value="smx" />
+      <property name="brokerURL" value="${activemq.brokerURL}" />        
+	  <property name="userName" value="${activemq.userName}" />
+	  <property name="password" value="${activemq.password}" />
    </bean>
 </beans>
