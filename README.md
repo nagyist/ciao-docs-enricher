@@ -146,8 +146,13 @@ individual properties of that route.
 processorConfig=default
 
 # Select which messaging config to use (via dynamic spring imports)
-messagingConfig=activemq-embedded
-#messagingConfig=activemq
+messagingConfig=activemq
+# messagingConfig=activemq-embedded
+
+# ActiveMQ settings (if messagingConfig=activemq)
+activemq.brokerURL=tcp://localhost:61616
+activemq.userName=smx
+activemq.password=smx
 
 # Setup route names (and how many routes to build)
 documentEnricherRoutes=default
