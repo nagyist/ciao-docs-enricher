@@ -20,7 +20,7 @@
 	
 	<dependencies>
 		<dependency>
-			<groupId>uk.nhs.interoperability</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>ciao-core</artifactId>
 		</dependency>
 
