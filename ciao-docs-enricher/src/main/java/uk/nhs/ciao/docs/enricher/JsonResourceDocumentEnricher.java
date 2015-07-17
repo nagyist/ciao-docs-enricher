@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -19,6 +18,7 @@ import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
 
 import uk.nhs.ciao.docs.parser.ParsedDocument;
+import uk.nhs.ciao.util.TreeMerge;
 
 /**
  * A document enricher which merges the incoming document with properties from
@@ -34,6 +34,7 @@ public class JsonResourceDocumentEnricher implements DocumentEnricher {
 	
 	private final List<String> resourcePaths;
 	private final ObjectMapper objectMapper;
+	private final TreeMerge treeMerge;
 	private boolean failOnMissingResource = false;
 	
 	/**
@@ -65,6 +66,7 @@ public class JsonResourceDocumentEnricher implements DocumentEnricher {
 	public JsonResourceDocumentEnricher(final ObjectMapper objectMapper, final String... resourcePaths) {
 		this.objectMapper = objectMapper == null ? new ObjectMapper() : objectMapper;
 		this.resourcePaths = Lists.newArrayList(resourcePaths);
+		this.treeMerge = new TreeMerge();
 		this.resourceLoader = new DefaultResourceLoader();
 		
 		// Remove any null/empty paths
@@ -100,39 +102,13 @@ public class JsonResourceDocumentEnricher implements DocumentEnricher {
 			
 			if (resource.exists()) {
 				final Map<String, Object> additionalProperties = readJsonResource(resource);
-				mergeProperties(properties, additionalProperties);
+				treeMerge.mergeInto(additionalProperties, properties);
 			} else if (failOnMissingResource) {
 				throw new Exception("Resource could not be loaded: " + resourcePath);
 			}
 		}
 		
 		return document;
-	}
-	
-	private void mergeProperties(final Map<String, Object> properties, final Map<String, Object> additionalProperties) {
-		for (final Entry<String, Object> property: additionalProperties.entrySet()) {
-			mergeProperty(properties, property.getKey(), property.getValue());
-		}
-	}
-	
-	@SuppressWarnings("unchecked")
-	private void mergeProperty(final Map<String, Object> properties, final String name, final Object value) {
-		final Object previousValue = properties.get(name);
-		
-		if (previousValue == null) {
-			properties.put(name, value);
-		} else if (previousValue instanceof Map && value instanceof Map) {
-			final Map<String, Object> previousMap = (Map<String, Object>)previousValue;
-			final Map<String, Object> additionalMap = (Map<String, Object>)value;
-			mergeProperties(previousMap, additionalMap);
-		} else if (previousValue instanceof List) {
-			final List<Object> previousList = (List<Object>)previousValue;
-			if (value instanceof List) {
-				previousList.addAll((List<Object>)value);
-			} else {
-				previousList.add(value);
-			}
-		} // else - do not overwrite!
 	}
 	
 	private Map<String, Object> readJsonResource(final Resource resource) throws IOException {
