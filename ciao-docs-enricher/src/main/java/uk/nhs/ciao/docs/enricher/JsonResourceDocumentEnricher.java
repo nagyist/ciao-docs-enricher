@@ -30,7 +30,9 @@ import uk.nhs.ciao.util.TreeMerge;
  * @see ResourceLoader
  */
 public class JsonResourceDocumentEnricher implements DocumentEnricher {
-	private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<Map<String, Object>>() {};
+	private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<Map<String, Object>>() {
+		// Jackson type reference - required to ensure generic type is available via reflection
+	};
 	
 	private final List<String> resourcePaths;
 	private final ObjectMapper objectMapper;
