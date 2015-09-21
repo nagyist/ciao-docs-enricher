@@ -1,5 +1,6 @@
 package uk.nhs.ciao.docs.enricher.route;
 
+import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.spi.Registry;
@@ -11,6 +12,7 @@ import uk.nhs.ciao.camel.BaseRouteBuilder;
 import uk.nhs.ciao.configuration.CIAOConfig;
 import uk.nhs.ciao.docs.enricher.DocumentEnricherProcessor;
 import uk.nhs.ciao.docs.parser.ParsedDocument;
+import uk.nhs.ciao.docs.parser.route.InProgressFolderManagerRoute;
 import uk.nhs.ciao.exceptions.CIAOConfigurationException;
 
 /**
@@ -74,7 +76,6 @@ public class EnrichDocumentRoute extends BaseRouteBuilder {
 	 * Configures / creates a new Camel route corresponding to the set of CIAO-config
 	 * properties associated with the route name.
 	 */
-	@SuppressWarnings("deprecation")
 	@Override
 	public void configure() throws Exception {
 		final Registry registry = getContext().getRegistry();
@@ -96,6 +97,14 @@ public class EnrichDocumentRoute extends BaseRouteBuilder {
 		.doCatch(Exception.class)
 			.log(LoggingLevel.ERROR, LOGGER, "Exception while enriching document: ${file:name}")
 			.to("log:" + LOGGER.getName() + "?level=ERROR&showCaughtException=true")
-			.handled(false);
+			
+			// Add a preparation-failed event to the in-progress directory
+			.setHeader(InProgressFolderManagerRoute.Header.ACTION, constant(InProgressFolderManagerRoute.Action.STORE))
+			.setHeader(InProgressFolderManagerRoute.Header.FILE_TYPE, constant(InProgressFolderManagerRoute.FileType.EVENT))
+			.setHeader(InProgressFolderManagerRoute.Header.EVENT_TYPE, constant(InProgressFolderManagerRoute.EventType.MESSAGE_PREPARATION_FAILED))
+			.setHeader(Exchange.FILE_NAME).constant(InProgressFolderManagerRoute.MessageType.DOCUMENT)
+			.setBody().simple("ciao-docs-enricher\n\n${exception.message}\n${exception.stacktrace}")
+			.to(inProgressFolderManagerUri)
+		.end();
 	}
 }
