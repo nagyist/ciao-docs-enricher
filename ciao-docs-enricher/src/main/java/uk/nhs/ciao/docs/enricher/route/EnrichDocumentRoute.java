@@ -3,6 +3,7 @@ package uk.nhs.ciao.docs.enricher.route;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.spi.Registry;
+import org.apache.camel.spring.spi.TransactionErrorHandlerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,6 +84,9 @@ public class EnrichDocumentRoute extends BaseRouteBuilder {
 		from("jms:queue:" + inputQueue)
 		.id("parse-document-" + name)
 		.streamCaching()
+		.errorHandler(new TransactionErrorHandlerBuilder()
+				.maximumRedeliveries(0)) // redeliveries are disabled (enrichment is only tried once)
+		.transacted("PROPAGATION_NOT_SUPPORTED")
 		.doTry()
 			.unmarshal().json(JsonLibrary.Jackson, ParsedDocument.class)
 			.log(LoggingLevel.INFO, LOGGER, "Unmarshalled incoming JSON document")

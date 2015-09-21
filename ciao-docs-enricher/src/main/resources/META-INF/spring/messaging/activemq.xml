@@ -10,9 +10,17 @@
        login and password for activemq in servicemix can be found
        in {servicmixpath}/etc/users.properties
   	-->
-  	<bean id="jms" class="org.apache.activemq.camel.component.ActiveMQComponent">
-      <property name="brokerURL" value="${activemq.brokerURL}" />        
-	  <property name="userName" value="${activemq.userName}" />
-	  <property name="password" value="${activemq.password}" />
-   </bean>
+  	
+  	<bean id="jmsConnectionFactory" class="org.springframework.jms.connection.CachingConnectionFactory">
+  		<constructor-arg>
+		  	<bean class="org.apache.activemq.ActiveMQConnectionFactory">
+		  		<property name="brokerURL" value="${activemq.brokerURL}" />        
+			    <property name="userName" value="${activemq.userName}" />
+			    <property name="password" value="${activemq.password}" />
+		  	</bean>
+	  	</constructor-arg>
+  	</bean>
+  	
+  	<!-- Import config common across all ActiveMQ configurations -->
+	<import resource="classpath*:META-INF/spring/messaging/activemq-common.xml"/>
 </beans>
