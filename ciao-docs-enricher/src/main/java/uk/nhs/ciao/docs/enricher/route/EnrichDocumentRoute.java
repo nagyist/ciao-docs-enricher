@@ -1,19 +1,20 @@
 package uk.nhs.ciao.docs.enricher.route;
 
+import static uk.nhs.ciao.logging.CiaoCamelLogMessage.camelLogMsg;
+
 import org.apache.camel.Exchange;
-import org.apache.camel.LoggingLevel;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.spi.Registry;
 import org.apache.camel.spring.spi.TransactionErrorHandlerBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import uk.nhs.ciao.camel.BaseRouteBuilder;
 import uk.nhs.ciao.configuration.CIAOConfig;
 import uk.nhs.ciao.docs.enricher.DocumentEnricherProcessor;
+import uk.nhs.ciao.docs.parser.HeaderNames;
 import uk.nhs.ciao.docs.parser.ParsedDocument;
 import uk.nhs.ciao.docs.parser.route.InProgressFolderManagerRoute;
 import uk.nhs.ciao.exceptions.CIAOConfigurationException;
+import uk.nhs.ciao.logging.CiaoCamelLogger;
 
 /**
  * Creates a Camel route for the specified name / property prefix.
@@ -25,7 +26,7 @@ import uk.nhs.ciao.exceptions.CIAOConfigurationException;
  * </ul>
  */
 public class EnrichDocumentRoute extends BaseRouteBuilder {
-	private static final Logger LOGGER = LoggerFactory.getLogger(EnrichDocumentRoute.class);
+	private static final CiaoCamelLogger LOGGER = CiaoCamelLogger.getLogger(EnrichDocumentRoute.class);
 	
 	/**
 	 * The root property 
@@ -89,14 +90,29 @@ public class EnrichDocumentRoute extends BaseRouteBuilder {
 				.maximumRedeliveries(0)) // redeliveries are disabled (enrichment is only tried once)
 		.transacted("PROPAGATION_NOT_SUPPORTED")
 		.doTry()
+			.process(LOGGER.info(camelLogMsg("Received JSON document to enrich")
+					.documentId(header(Exchange.CORRELATION_ID))
+					.originalFileName(header(HeaderNames.SOURCE_FILE_NAME))))
 			.unmarshal().json(JsonLibrary.Jackson, ParsedDocument.class)
-			.log(LoggingLevel.INFO, LOGGER, "Unmarshalled incoming JSON document")
-			.process(processor)					
+
+			.process(LOGGER.info(camelLogMsg("Attempting to enrich document")
+					.documentId(header(Exchange.CORRELATION_ID))
+					.eventName(constant("enriching-document"))
+					.originalFileName(header(HeaderNames.SOURCE_FILE_NAME))))
+			.process(processor)
+			
+			.process(LOGGER.info(camelLogMsg("Completed document enrichment")
+					.documentId(header(Exchange.CORRELATION_ID))
+					.eventName(constant("enriched-document"))
+					.originalFileName(header(HeaderNames.SOURCE_FILE_NAME))))					
 			.marshal().json(JsonLibrary.Jackson)
 			.to("jms:queue:" + outputQueue)
 		.doCatch(Exception.class)
-			.log(LoggingLevel.ERROR, LOGGER, "Exception while enriching document: ${file:name}")
-			.to("log:" + LOGGER.getName() + "?level=ERROR&showCaughtException=true")
+			
+			.process(LOGGER.warn(camelLogMsg("Document enrichment failed")
+					.documentId(header(Exchange.CORRELATION_ID))
+					.eventName(constant("document-enrichment-failed"))
+					.originalFileName(header(HeaderNames.SOURCE_FILE_NAME))))
 			
 			// Add a preparation-failed event to the in-progress directory
 			.setHeader(InProgressFolderManagerRoute.Header.ACTION, constant(InProgressFolderManagerRoute.Action.STORE))
