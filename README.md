@@ -51,7 +51,7 @@ The Spring XML files are loaded from the classpath under the [META-INF/spring](.
 
 **Messaging:**
 
--   `messaging/activemq.xm`l - Configures ActiveMQ as the JMS implementation for input/output queues.
+-   `messaging/activemq.xml` - Configures ActiveMQ as the JMS implementation for input/output queues.
 -   `messaging/activemq-embedded.xml` - Configures an internal embedded ActiveMQ as the JMS implementation for input/output queues. *(For use during development/testing)*
 
 ### CIAO Properties
@@ -126,6 +126,7 @@ documentEnricherRoutes.default.enricherId=staticJson
 documentEnricherRoutes.default.inputQueue=parsed-documents
 
 staticJson.resourcePaths=classpath:/json/extra-detail.json
+inProgressFolder=./in-progress
 ```
 
 Building and Running
@@ -153,3 +154,4 @@ The CIP requires access to various file system directories and network ports (de
 **Filesystem**:
  -  If etcd is not available, CIAO properties will be loaded from: `~/.ciao/`
  -  The default configuration will load JSON files for the filesystem if any `file://` URLs are specified in the `staticJson.resourcePaths` property. This can be altered by changing the CIAO properties configuration (via etcd, or the properties file in `~/.ciao/`)
+ -  If an incoming document cannot be converted, the CIP will write an event to the folder specified by the `inProgressFolder` property.
