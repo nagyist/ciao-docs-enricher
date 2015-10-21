@@ -14,7 +14,7 @@ Each application can host multiple [routes](http://camel.apache.org/routes.html)
 
 >   input queue (JMS) -\> [DocumentEnricher](./ciao-docs-enricher/src/main/java/uk/nhs/ciao/docs/enricher/DocumentEnricher.java) or [AsyncDocumentEnricher](./ciao-docs-enricher/src/main/java/uk/nhs/ciao/docs/enricher/AsyncDocumentEnricher.java) -\> output queue (JMS)
 
-*The input and output formats of the queues use the JSON-encoded representation of [ParsedDocument](https://github.com/nhs-ciao/ciao-docs-parser/ciao-docs-parser-model/src/main/java/uk/nhs/ciao/docs/parser/ParsedDocument.java).*
+-	*The input and output queues both use the JSON-encoded representation of [ParsedDocument](https://github.com/nhs-ciao/ciao-docs-parser/ciao-docs-parser-model/src/main/java/uk/nhs/ciao/docs/parser/ParsedDocument.java).*
 
 The details of the JMS queues and document enrichers are specified at runtime through a combination of [ciao-configuration](https://github.com/nhs-ciao/ciao-utils) properties and Spring XML files.
 
