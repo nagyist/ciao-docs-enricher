@@ -6,7 +6,7 @@ ciao-docs-enricher
 Introduction
 ------------
 
-The purpose of this CIP is to process an incoming [parsed document](https://github.com/nhs-ciao/ciao-docs-parser/ciao-docs-parser-model) by enriching it with additional properties before publishing the enriched document for further processing by other CIPs.
+The purpose of this CIP is to process an incoming [parsed document](https://github.com/nhs-ciao/ciao-docs-parser/blob/master/docs/parsed-document.md) by enriching it with additional properties before publishing the enriched document for further processing by other CIPs.
 
 `ciao-docs-enricher` is built on top of [Apache Camel](http://camel.apache.org/) and [Spring Framework](http://projects.spring.io/spring-framework/), and can be run as a stand-alone Java application, or via [Docker](https://www.docker.com/).
 
@@ -14,7 +14,7 @@ Each application can host multiple [routes](http://camel.apache.org/routes.html)
 
 >   input queue (JMS) -\> [DocumentEnricher](./ciao-docs-enricher/src/main/java/uk/nhs/ciao/docs/enricher/DocumentEnricher.java) or [AsyncDocumentEnricher](./ciao-docs-enricher/src/main/java/uk/nhs/ciao/docs/enricher/AsyncDocumentEnricher.java) -\> output queue (JMS)
 
--	*The input and output queues both use the JSON-encoded representation of [ParsedDocument](https://github.com/nhs-ciao/ciao-docs-parser/ciao-docs-parser-model/src/main/java/uk/nhs/ciao/docs/parser/ParsedDocument.java).*
+-	*The input and output queues both use the JSON-encoded representation of [ParsedDocument](https://github.com/nhs-ciao/ciao-docs-parser/blob/master/docs/parsed-document.md).*
 
 The details of the JMS queues and document enrichers are specified at runtime through a combination of [ciao-configuration](https://github.com/nhs-ciao/ciao-utils) properties and Spring XML files.
 
