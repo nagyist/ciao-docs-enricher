@@ -90,6 +90,13 @@ The list of route names serves two purposes. Firstly it determines how many rout
 -   `enricherId` - The Spring ID of the enricher to use when enriching documents
 -   `outputQueue` - Selects which queue to publish enriched documents to
 
+**In-progress Folder:**
+> Details of the in-progress folder structure are available in the `ciao-docs-finalizer` [state machine](https://github.com/nhs-ciao/ciao-docs-finalizer/blob/master/docs/state-machine.md) documentation.
+
+> `ciao-docs-parser` provides the [InProgressFolderManagerRoute](https://github.com/nhs-ciao/ciao-docs-parser/blob/master/ciao-docs-parser-model/src/main/java/uk/nhs/ciao/docs/parser/route/InProgressFolderManagerRoute.java) class to support storing control and event files in the in-progress directory.
+
+- `inProgressFolder` - Defines the root folder that *document upload process* events are written to.
+
 **Default Processor​:**
 
 >   These properties only apply when using: `processorConfiguration=default`
