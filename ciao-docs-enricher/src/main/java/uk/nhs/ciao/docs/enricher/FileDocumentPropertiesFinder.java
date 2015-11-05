@@ -1,6 +1,9 @@
 package uk.nhs.ciao.docs.enricher;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 
@@ -10,6 +13,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.io.Closeables;
 
 /**
  * {@link DocumentPropertiesFinder} which finds properties from JSON files.
@@ -62,42 +66,49 @@ public class FileDocumentPropertiesFinder implements DocumentPropertiesFinder {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, Object> findProperties(final Map<String, Object> lookupKeys) throws Exception {
-		final File file = getFile(lookupKeys);
-		if (file == null || !file.isFile()) {
-			return Collections.emptyMap();
+		final InputStream inputStream = getJson(lookupKeys);
+		try {
+			if (inputStream == null) {
+				return Collections.emptyMap();
+			}
+			
+			final Map<String, Object> properties = objectMapper.readValue(inputStream, MAP_TYPE);
+			if (propertySelector == null) {
+				return properties;
+			}
+			
+			final Object value = propertySelector.selectValue(lookupKeys);
+			if (value == null) {
+				return Collections.emptyMap();
+			}
+			
+			return PropertySelector.valueOf(value.toString()).selectValue(Map.class, properties);
+		} finally {
+			Closeables.closeQuietly(inputStream);
 		}
-		
-		final Map<String, Object> properties = objectMapper.readValue(file, MAP_TYPE);
-		if (propertySelector == null) {
-			return properties;
-		}
-		
-		return propertySelector.selectValue(Map.class, properties);
 	}
 	
-	private File getFile(final Map<String, Object> lookupKeys) {
-		File file = null;
-		
-		if (!Strings.isNullOrEmpty(filePath)) {
-			file = new File(filePath);
-		}
+	private InputStream getJson(final Map<String, Object> lookupKeys) throws IOException {
+		String parent = null;
+		String fileName = Strings.isNullOrEmpty(filePath) ? null : filePath;
 		
 		if (fileNameSelector != null) {
 			final Object value = fileNameSelector.selectValue(lookupKeys);
 			if (value != null) {
-				String fileName = value.toString();
+				parent = fileName;
+				fileName = value.toString();
 				if (fileSuffix != null) {
 					fileName += fileSuffix;
-				}
-				
-				if (file == null) {
-					file = new File(fileName);
-				} else {
-					file = new File(file, fileName);
 				}
 			}
 		}
 
-		return file;
+		return getJson(parent, fileName);
+	}
+	
+	// protected for unit tests
+	protected InputStream getJson(final String parent, final String fileName) throws IOException {
+		final File file = Strings.isNullOrEmpty(parent) ? new File(fileName) : new File(parent, fileName);
+		return file.isFile() ? new FileInputStream(file) : null;
 	}
 }
