@@ -47,7 +47,9 @@ The Spring XML files are loaded from the classpath under the [META-INF/spring](.
 
 **Processors:**
 
--   `processors/default.xml` - Creates a single `JsonResourceDocumentEnricher` to load static content from the classpath or filesystem
+-   `processors/include-json.xml` - Creates a single `JsonResourceDocumentEnricher` to load static content from the classpath or filesystem
+-   `processors/lookup-json.xml` - Creates a single `DynamicDocumentEnricher` to load JSON content from the classpath or filesystem, and dynamically select what to include based on data in the incoming document properties
+-   `processors/lookup-database.xml` - Creates a single `DynamicDocumentEnricher` to load key/value pairs or embedded JSON content from a database, and dynamically select what to include based on data in the incoming document properties
 
 **Messaging:**
 
@@ -97,21 +99,63 @@ The list of route names serves two purposes. Firstly it determines how many rout
 
 - `inProgressFolder` - Defines the root folder that *document upload process* events are written to.
 
-**Default Processor​:**
+**Include JSON Processor​:**
 
->   These properties only apply when using: `processorConfiguration=default`
+>   These properties only apply when using: `processorConfiguration=include-json`
 
--   `staticJson.resourcePaths` - A comma separated list of JSON resources to include. Spring resource loader syntax is supported, e.g. `classpath:`, `file:` etc).
+-   `json.resourcePaths` - A comma separated list of JSON resources to include. Spring resource loader syntax is supported, e.g. `classpath:`, `file:` etc).
+
+**Lookup JSON Processor​:**
+
+>   These properties only apply when using: `processorConfiguration=lookup-json`
+
+-	`json.enrichablePropertiesSelectors` - comma separated list of property selectors to selects which section or sections of the document should be enriched. The selected object must be a dynamic map - if empty the root document properties are used.
+-	`json.lookupKeySelectors` - comma separated list of property selectors to select a set of key/value pairs from the document to use as lookup keys for the dynamic data.
+-   `json.resourcePath` - An optional parent path to use when selecting which JSON resource to include. Spring resource loader syntax is supported, e.g. `classpath:`, `file:` etc). 
+-	`json.resourceNameSelector` - optional property selector for choosing a dynamic file name based on the lookup keys
+-	`json.resourceSuffix=` - Suffix to apply to dynamically selected resource names
+-	`json.propertySelector` - Optional property selector to select a section of the JSON resource to return (using incoming lookup keys). If empty, the entire JSON structure is returned.
+
+**Lookup Database Processor​:**
+
+>   These properties only apply when using: `processorConfiguration=lookup-database`
+
+-	`database.url` - JDBC URL used to connect to the database
+-	`database.username` - The username to connect to the database with
+-	`database.password` - The password to connect to the database with
+-	`database.enrichablePropertiesSelectors` - comma separated list of property selectors to selects which section or sections of the document should be enriched. The selected object must be a dynamic map - if empty the root document properties are used.
+-	`database.lookupKeySelectors` - comma separated list of property selectors to select a set of key/value pairs from the document to use as lookup keys for the dynamic data.
+-	`database.sqlQuery` - The select query used to find the properties. A single named parameter (of the form `:?id`) should form part of the WHERE clause. The document property names can be configured by using SQL aliases.
+-	`database.idParameter` - The name of the SQL parameter included in the WHERE clause
+-	`database.idSelector` - The property selector for finding ID values from the incoming lookup keys - the resulting value forms the dynamic part of the SQL WHERE clause
+-	`database.jsonColumn` - Optional name of a single returned column containing data as an embedded JSON string
+
+**Property Selectors:**
+
+Property selectors support addressing nested properties by key and index:
+- nested keys: `root.child`
+- nested arrays: `root[0]`
+- wildcard keys: `root.*`
+- wildcard arrays: `root[*]`
+
+Selectors can be combined (including multiple wildcards): `root[*].child[2].*`.
+
 
 ### Example
 ```INI
+# Config name/version
+cip.name=ciao-docs-enricher
+cip.version=1.0.0-SNAPSHOT
+
 # Camel logging
 camel.log.mdc=true
 camel.log.trace=false
 camel.log.debugStreams=false
 
 # Select which processor config to use (via dynamic spring imports)
-processorConfig=default
+processorConfig=include-json
+#processorConfig=lookup-json
+#processorConfig=lookup-database
 
 # Select which messaging config to use (via dynamic spring imports)
 messagingConfig=activemq
@@ -129,11 +173,32 @@ documentEnricherRoutes=default
 documentEnricherRoutes.outputQueue=enriched-documents
 
 # Setup per-route properties (can override the shared properties)
-documentEnricherRoutes.default.enricherId=staticJson
+documentEnricherRoutes.default.enricherId=enricher
 documentEnricherRoutes.default.inputQueue=parsed-documents
 
-staticJson.resourcePaths=classpath:/json/extra-detail.json
 inProgressFolder=./in-progress
+
+# JSON include options (if processorConfig=include-json)
+json.resourcePaths=classpath:/json/extra-detail.json
+
+# JSON lookup options (if processorConfig=lookup-json)
+json.enrichablePropertiesSelectors=
+json.lookupKeySelectors=documentId
+json.resourcePath=classpath:/json/dynamic/
+json.resourceNameSelector=documentId
+json.resourceSuffix=.json
+json.propertySelector=
+
+# Database lookup options (if processorConfig=lookup-database)
+database.url=jdbc:derby:memory:example;create=true
+database.username=DB_USER
+database.password=DB_PASS
+database.enrichablePropertiesSelectors=
+database.lookupKeySelectors=documentId
+database.sqlQuery=SELECT * FROM EXAMPLES WHERE ID = ?:id
+database.idParameter=id
+database.idSelector=documentId
+database.jsonColumn=
 ```
 
 Building and Running
@@ -160,5 +225,9 @@ The CIP requires access to various file system directories and network ports (de
 
 **Filesystem**:
  -  If etcd is not available, CIAO properties will be loaded from: `~/.ciao/`
- -  The default configuration will load JSON files for the filesystem if any `file://` URLs are specified in the `staticJson.resourcePaths` property. This can be altered by changing the CIAO properties configuration (via etcd, or the properties file in `~/.ciao/`)
+ -  The default configuration will load JSON files for the filesystem if any `file://` URLs are specified in the `json.resourcePaths` or `json.resourcePath` properties. This can be altered by changing the CIAO properties configuration (via etcd, or the properties file in `~/.ciao/`)
  -  If an incoming document cannot be converted, the CIP will write an event to the folder specified by the `inProgressFolder` property.
+
+**Database**:
+If the `lookup-database` processor is used:
+ -	connects to the URL defined by the `database.url` property.
