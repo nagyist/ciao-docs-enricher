@@ -4,9 +4,9 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 
 	<bean id="jdbcDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-		<property name="url" value="${jdbc.url}" />
-		<property name="username" value="${jdbc.username}" />
-		<property name="password" value="${jdbc.password}" />
+		<property name="url" value="${database.url}" />
+		<property name="username" value="${database.username}" />
+		<property name="password" value="${database.password}" />
 	</bean>
 
 	<!-- Define any processor beans here -->
@@ -14,15 +14,15 @@
 		<constructor-arg>
 			<bean class="uk.nhs.ciao.docs.enricher.JdbcResourceDocumentPropertiesFinder">
 				<property name="dataSourceId" value="jdbcDataSource" />
-				<property name="sqlQuery" value="${jdbc.sqlQuery}" />
-				<property name="idParameter" value="${jdbc.idParameter}" />
-				<property name="idSelector" value="${jdbc.idSelector}" />
-				<property name="jsonColumn" value="${jdbc.jsonColumn}" />				
+				<property name="sqlQuery" value="${database.sqlQuery}" />
+				<property name="idParameter" value="${database.idParameter}" />
+				<property name="idSelector" value="${database.idSelector}" />
+				<property name="jsonColumn" value="${database.jsonColumn}" />				
 			</bean>
 		</constructor-arg>
 		
-		<property name="enrichablePropertiesSelectors" value="#{T(java.util.Arrays).asList('${jdbc.enrichablePropertiesSelectors}'.split(','))}" />
-		<property name="lookupKeySelectors" value="#{T(java.util.Arrays).asList('${jdbc.lookupKeySelectors}'.split(','))}" />
+		<property name="enrichablePropertiesSelectors" value="#{T(java.util.Arrays).asList('${database.enrichablePropertiesSelectors}'.split(','))}" />
+		<property name="lookupKeySelectors" value="#{T(java.util.Arrays).asList('${database.lookupKeySelectors}'.split(','))}" />
 	</bean>
 
 </beans>

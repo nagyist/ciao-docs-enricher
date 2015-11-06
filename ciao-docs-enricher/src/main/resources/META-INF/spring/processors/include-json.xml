@@ -5,7 +5,7 @@
 	
 	<!-- Define any processor beans here -->
 	<bean id="enricher" class="uk.nhs.ciao.docs.enricher.JsonResourceDocumentEnricher">
-		<constructor-arg type="String[]" value="#{'${staticJson.resourcePaths}'.split(',')}" />
+		<constructor-arg type="String[]" value="#{'${json.resourcePaths}'.split(',')}" />
 		<property name="failOnMissingResource" value="true" />
 	</bean>
 	

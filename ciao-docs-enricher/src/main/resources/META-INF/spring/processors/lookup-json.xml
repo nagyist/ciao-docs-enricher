@@ -7,15 +7,15 @@
 	<bean id="enricher" class="uk.nhs.ciao.docs.enricher.DynamicDocumentEnricher">
 		<constructor-arg>
 			<bean class="uk.nhs.ciao.docs.enricher.JsonResourceDocumentPropertiesFinder">
-				<property name="resourcePath" value="${dynamicJson.resourcePath}" />
-				<property name="resourceNameSelector" value="${dynamicJson.resourceNameSelector}" />
-				<property name="resourceSuffix" value="${dynamicJson.resourceSuffix}" />
-				<property name="propertySelector" value="${dynamicJson.propertySelector}" />
+				<property name="resourcePath" value="${json.resourcePath}" />
+				<property name="resourceNameSelector" value="${json.resourceNameSelector}" />
+				<property name="resourceSuffix" value="${json.resourceSuffix}" />
+				<property name="propertySelector" value="${json.propertySelector}" />
 			</bean>
 		</constructor-arg>
 		
-		<property name="enrichablePropertiesSelectors" value="#{T(java.util.Arrays).asList('${dynamicJson.enrichablePropertiesSelectors}'.split(','))}" />
-		<property name="lookupKeySelectors" value="#{T(java.util.Arrays).asList('${dynamicJson.lookupKeySelectors}'.split(','))}" />
+		<property name="enrichablePropertiesSelectors" value="#{T(java.util.Arrays).asList('${json.enrichablePropertiesSelectors}'.split(','))}" />
+		<property name="lookupKeySelectors" value="#{T(java.util.Arrays).asList('${json.lookupKeySelectors}'.split(','))}" />
 	</bean>
 
 </beans>
