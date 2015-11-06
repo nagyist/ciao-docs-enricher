@@ -74,14 +74,12 @@ public class DynamicDocumentEnricher implements DocumentEnricher {
 		if (document == null) {
 			return null;
 		}
-		
-		final Map<String, Object> lookupKeys = Maps.newLinkedHashMap();
+	
 		for (final Map<String, Object> properties: getEnrichableProperties(document)) {
+			final Map<String, Object> lookupKeys = Maps.newLinkedHashMap();
 			getLookupKeys(properties, lookupKeys);
 			final Map<String, Object> additionalProperties = findAdditionalProperties(lookupKeys);
 			addAdditionalProperties(additionalProperties, properties);
-			
-			lookupKeys.clear();
 		}
 		
 		return document;
@@ -95,7 +93,7 @@ public class DynamicDocumentEnricher implements DocumentEnricher {
 		} else {
 			for (final PropertySelector selector: enrichablePropertiesSelectors) {
 				@SuppressWarnings({ "unchecked", "rawtypes" })
-				final List<Map<String, Object>> result = (List)selector.selectAllValues(Map.class, document.getProperties());
+				final Collection<Map<String, Object>> result = (Collection)selector.selectAllValues(Map.class, document.getProperties());
 				enrichableProperties.addAll(result);
 			}
 		}
