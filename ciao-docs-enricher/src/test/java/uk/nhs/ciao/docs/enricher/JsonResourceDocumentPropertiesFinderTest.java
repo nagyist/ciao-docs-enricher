@@ -9,17 +9,21 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 
 /**
- * Unit tests for {@link FileDocumentPropertiesFinder}
+ * Unit tests for {@link JsonResourceDocumentPropertiesFinder}
  */
-public class FileDocumentPropertiesFinderTest {
+public class JsonResourceDocumentPropertiesFinderTest {
 	private ObjectMapper objectMapper;
-	private MockFilesystem filesystem;
-	private FileDocumentPropertiesFinder finder;
+	private ResourceLoader resourceLoader;
+	private JsonResourceDocumentPropertiesFinder finder;
 	private Map<String, Object> properties;
 	private Map<String, Object> additional;
 	private String additionalJson;
@@ -27,14 +31,8 @@ public class FileDocumentPropertiesFinderTest {
 	@Before
 	public void setup() throws Exception {
 		objectMapper = new ObjectMapper();
-		// Interaction with file-system is mocked out
-		filesystem = Mockito.spy(new MockFilesystem());
-		finder = new FileDocumentPropertiesFinder(objectMapper) {
-			@Override
-			protected InputStream getJson(final String parent, final String fileName) throws IOException {
-				return filesystem.get(parent, fileName);
-			}
-		};
+		resourceLoader = Mockito.mock(ResourceLoader.class);
+		finder = new JsonResourceDocumentPropertiesFinder(resourceLoader, objectMapper);
 		
 		properties = Maps.newLinkedHashMap();
 		properties.put("name", "original name");
@@ -70,39 +68,51 @@ public class FileDocumentPropertiesFinderTest {
 		}
 	}
 	
+	private void addResource(final String name, final String value) throws IOException {
+		final Resource resource = Mockito.mock(Resource.class);
+		Mockito.when(resource.getInputStream()).thenAnswer(new Answer<InputStream>() {
+			@Override
+			public InputStream answer(InvocationOnMock invocation) throws Throwable {
+				return new ByteArrayInputStream(value.getBytes());
+			}
+		});
+		Mockito.when(resource.exists()).thenReturn(true);
+		Mockito.when(resourceLoader.getResource(name)).thenReturn(resource);
+	}
+	
 	@Test
-	public void testStaticFileName() throws Exception {
-		filesystem.put(null, "static-file.json", additionalJson);
+	public void testStaticResourceName() throws Exception {
+		addResource("static-file.json", additionalJson);
 		
-		finder.setFilePath("static-file.json");
+		finder.setResourcePath("static-file.json");
 		final Map<String, Object> result = finder.findProperties(properties);
 		Assert.assertEquals(additional, result);
 	}
 	
 	@Test
-	public void testDynamicFileName() throws Exception {
-		filesystem.put(null, "original name.json", additionalJson);
+	public void testDynamicResourceName() throws Exception {
+		addResource("original name.json", additionalJson);
 		
-		finder.setFileNameSelector("name");
+		finder.setResourceNameSelector("name");
 		final Map<String, Object> result = finder.findProperties(properties);
 		Assert.assertEquals(additional, result);
 	}
 	
 	@Test
-	public void testFilePathWithDynamicFileName() throws Exception {
-		filesystem.put("/static-root", "original name.json", additionalJson);
+	public void testResourcePathWithDynamicResourceName() throws Exception {
+		addResource("/static-root/original name.json", additionalJson);
 		
-		finder.setFilePath("/static-root");
-		finder.setFileNameSelector("name");
+		finder.setResourcePath("/static-root");
+		finder.setResourceNameSelector("name");
 		final Map<String, Object> result = finder.findProperties(properties);
 		Assert.assertEquals(additional, result);
 	}
 	
 	@Test
 	public void testPropertySelector() throws Exception {
-		filesystem.put(null, "static-file.json", additionalJson);
+		addResource("static-file.json", additionalJson);
 		
-		finder.setFilePath("static-file.json");
+		finder.setResourcePath("static-file.json");
 		finder.setPropertySelector("id");
 		final Map<String, Object> result = finder.findProperties(properties);
 		Assert.assertEquals(additional.get("123"), result);

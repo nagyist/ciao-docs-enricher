@@ -52,11 +52,11 @@ public class JdbcDocumentPropertiesFinder implements DocumentPropertiesFinder {
 	};
 	
 	private final ProducerTemplate producerTemplate;
+	private final ObjectMapper objectMapper;
 	private String dataSourceId;
 	private String sqlQuery;
 	private String idParameter;
 	private PropertySelector idSelector;
-	private ObjectMapper objectMapper;
 	private String jsonColumn;
 
 	/**
@@ -66,7 +66,18 @@ public class JdbcDocumentPropertiesFinder implements DocumentPropertiesFinder {
 	 */
 	@Autowired
 	public JdbcDocumentPropertiesFinder(final ProducerTemplate producerTemplate) {
+		this(producerTemplate, new ObjectMapper());
+	}
+	
+	/**
+	 * Constructs a new finder backed by the specified Camel producer template
+	 * and Jackson object mapper
+	 * <p>
+	 * Spring auto-wiring is supported
+	 */
+	public JdbcDocumentPropertiesFinder(final ProducerTemplate producerTemplate, final ObjectMapper objectMapper) {
 		this.producerTemplate = Preconditions.checkNotNull(producerTemplate);
+		this.objectMapper = objectMapper;
 	}
 	
 	/**
@@ -101,15 +112,6 @@ public class JdbcDocumentPropertiesFinder implements DocumentPropertiesFinder {
 	 */
 	public void setIdSelector(final String idSelector) {
 		this.idSelector = idSelector == null ? null : PropertySelector.valueOf(idSelector);
-	}
-	
-	/**
-	 * Mapper used to convert embedded JSON values to objects.
-	 * <p>
-	 * Only required is {@link #jsonColumn} is specified.
-	 */
-	public void setObjectMapper(final ObjectMapper objectMapper) {
-		this.objectMapper = objectMapper;
 	}
 	
 	/**

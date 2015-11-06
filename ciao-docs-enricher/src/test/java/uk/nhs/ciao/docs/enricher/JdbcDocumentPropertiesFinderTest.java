@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 
 import uk.nhs.ciao.camel.CamelUtils;
@@ -106,7 +105,6 @@ public class JdbcDocumentPropertiesFinderTest {
 				
 		finder = new JdbcDocumentPropertiesFinder(producerTemplate);
 		finder.setDataSourceId("dataSource");
-		finder.setObjectMapper(new ObjectMapper());
 	}
 	
 	@After

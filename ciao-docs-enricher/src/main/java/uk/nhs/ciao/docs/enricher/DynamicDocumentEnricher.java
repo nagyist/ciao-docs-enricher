@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -52,14 +53,18 @@ public class DynamicDocumentEnricher implements DocumentEnricher {
 	public void setEnrichablePropertiesSelectors(final Collection<String> enrichablePropertiesSelectors) {
 		this.enrichablePropertiesSelectors.clear();
 		for (final String selector: enrichablePropertiesSelectors) {
-			this.enrichablePropertiesSelectors.add(PropertySelector.valueOf(selector));
+			if (!Strings.isNullOrEmpty(selector)) {
+				this.enrichablePropertiesSelectors.add(PropertySelector.valueOf(selector));
+			}
 		}
 	}
 	
 	public void setLookupKeySelectors(final Collection<String> lookupKeySelectors) {
 		this.lookupKeySelectors.clear();
 		for (final String selector: lookupKeySelectors) {
-			this.lookupKeySelectors.add(PropertySelector.valueOf(selector));
+			if (!Strings.isNullOrEmpty(selector)) {
+				this.lookupKeySelectors.add(PropertySelector.valueOf(selector));
+			}
 		}
 	}
 	

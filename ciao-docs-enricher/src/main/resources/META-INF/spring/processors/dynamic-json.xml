@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+	<!-- Define any processor beans here -->
+	<bean id="enricher" class="uk.nhs.ciao.docs.enricher.DynamicDocumentEnricher">
+		<constructor-arg>
+			<bean class="uk.nhs.ciao.docs.enricher.JsonResourceDocumentPropertiesFinder">
+				<property name="resourcePath" value="${dynamicJson.resourcePath}" />
+				<property name="resourceNameSelector" value="${dynamicJson.resourceNameSelector}" />
+				<property name="resourceSuffix" value="${dynamicJson.resourceSuffix}" />
+				<property name="propertySelector" value="${dynamicJson.propertySelector}" />
+			</bean>
+		</constructor-arg>
+		
+		<property name="enrichablePropertiesSelectors" value="#{T(java.util.Arrays).asList('${dynamicJson.enrichablePropertiesSelectors}'.split(','))}" />
+		<property name="lookupKeySelectors" value="#{T(java.util.Arrays).asList('${dynamicJson.lookupKeySelectors}'.split(','))}" />
+	</bean>
+
+</beans>
