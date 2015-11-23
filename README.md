@@ -132,6 +132,8 @@ The list of route names serves two purposes. Firstly it determines how many rout
 
 **Property Selectors:**
 
+> [PropertySelector](https://github.com/nhs-ciao/ciao-docs-parser/blob/master/ciao-docs-parser-model/src/main/java/uk/nhs/ciao/docs/parser/PropertySelector.java) is used to find source properties.
+
 Property selectors support addressing nested properties by key and index:
 - nested keys: `root.child`
 - nested arrays: `root[0]`
@@ -140,6 +142,9 @@ Property selectors support addressing nested properties by key and index:
 
 Selectors can be combined (including multiple wildcards): `root[*].child[2].*`.
 
+Special characters `[ ] . * \` must be delimited by a `\` prefix:
+- `D\.O\.B`
+- `first\\last`
 
 ### Example
 ```INI
